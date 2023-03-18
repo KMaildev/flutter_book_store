@@ -7,6 +7,7 @@ class DatabaseHelper {
   String columnBookName = 'bookName';
   String columnbookAuthor = 'bookAuthor';
   String columnbookPrice = 'bookPrice';
+  String columnbookImage = 'bookImage';
 
   String dbName = 'bootstore';
   String tableName = 'books';
@@ -21,7 +22,8 @@ class DatabaseHelper {
   }
 
   void _createDb(Database db, int version) {
-    String sql = 'CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnBookName CHAR, $columnbookAuthor CHAR, $columnbookPrice INTEGER)';
+    String sql =
+        'CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnBookName CHAR, $columnbookAuthor CHAR, $columnbookPrice INTEGER, $columnbookImage CHAR)';
     db.execute(sql);
   }
 
@@ -29,5 +31,39 @@ class DatabaseHelper {
     _database = await getDatabase();
     int result = await _database!.insert(tableName, book.toMap());
     return result;
+  }
+
+  Future<int> updateData(Book book, int id) async {
+    _database = await getDatabase();
+    book.id = id;
+    int result = await _database!.update(
+      tableName,
+      book.toMap(),
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    return result;
+  }
+
+  Future<void> deleteData(int id) async {
+    _database = await getDatabase();
+    await _database!.delete(
+      tableName,
+      where: 'id == ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Book>> getAllData() async {
+    _database = await getDatabase();
+    List<Map<String, dynamic>> maps = await _database!.query(tableName);
+
+    // List<Book> books = [];
+    // for (Map<String, dynamic> map in maps) {
+    //   Book b = Book.fromMap(map);
+    //   books.add(b);
+    // }
+
+    return maps.map((e) => Book.fromMap(e)).toList();
   }
 }
